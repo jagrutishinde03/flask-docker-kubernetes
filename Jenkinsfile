@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "jagruti03shinde/web-app:latest"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${DOCKER_IMAGE} .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                    '''
+                }
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig([credentialsId: 'kubeconfig']) {
+                    sh '''
+                        kubectl apply -f k8s-deployment.yaml
+                        kubectl apply -f k8s-service.yaml
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'your-email@example.com',
+                 subject: 'Deployment Successful',
+                 body: 'Your application has been successfully deployed!'
+        }
+        failure {
+            mail to: 'your-email@example.com',
+                 subject: 'Deployment Failed',
+                 body: 'The deployment failed. Check the Jenkins logs for details.'
+        }
+    }
+}
