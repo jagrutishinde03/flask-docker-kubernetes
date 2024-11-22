@@ -38,12 +38,4 @@ pipeline {
         }
     }
 
-    post {
-    success {
-        // Disable or remove this block if you don't need emails
-    }
-    failure {
-        // Disable or remove this block if you don't need emails
-    }
-}
 }
