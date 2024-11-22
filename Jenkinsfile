@@ -39,15 +39,11 @@ pipeline {
     }
 
     post {
-        success {
-            mail to: 'your-email@example.com',
-                 subject: 'Deployment Successful',
-                 body: 'Your application has been successfully deployed!'
-        }
-        failure {
-            mail to: 'your-email@example.com',
-                 subject: 'Deployment Failed',
-                 body: 'The deployment failed. Check the Jenkins logs for details.'
-        }
+    success {
+        // Disable or remove this block if you don't need emails
     }
+    failure {
+        // Disable or remove this block if you don't need emails
+    }
+}
 }
