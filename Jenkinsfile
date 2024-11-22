@@ -37,12 +37,21 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
     steps {
-        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-            sh '''
-                export KUBECONFIG=$KUBECONFIG
-                kubectl apply -f k8s-deployment.yaml
-                kubectl apply -f k8s-service.yaml
-            '''
+        withCredentials([
+            string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')
+        ]) {
+            script {
+                // Set AWS CLI credentials
+                sh 'aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID'
+                sh 'aws configure set region ap-south-1'
+
+                // Run kubectl commands to deploy
+                sh '''
+                    export KUBECONFIG=~/.kube/config
+                    kubectl apply -f k8s-deployment.yaml
+                '''
+            }
         }
     }
 }
